@@ -10,7 +10,7 @@ import wandb
 
 from jaxirl.training.ppo_v2_irl import ActorCritic
 from jaxirl.training.ppo_v2_cont_irl import ActorCritic as ActorCriticCont
-from jaxirl.configs.outer_training_configs import IRL_CONFIG, EVIL_CONFIG
+from jaxirl.configs.outer_training_configs import IRL_CONFIG
 from jaxirl.utils.env_utils import get_eval_config
 
 
@@ -188,8 +188,8 @@ def get_irl_config(es_config, original_training_config):
 def generate_config(args, seed):
     if args.loss == "IRL":
         config = IRL_CONFIG.copy()
-    elif args.loss == "XE":
-        config = EVIL_CONFIG.copy()
+    else:
+        config = {}
     if args.generations is not None:
         config["generations"] = args.generations
     config["seed"] = seed

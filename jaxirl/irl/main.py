@@ -6,7 +6,6 @@ import wandb
 from jaxirl.utils.utils import get_irl_config
 from jaxirl.irl.irl import IRL
 from jaxirl.irl.bc import BC
-from jaxirl.irl.evil import EvIL
 from jaxirl.irl.rl import RL
 from jaxirl.utils.env_utils import get_env, get_test_params
 
@@ -165,18 +164,6 @@ def main(es_config=None):
         training_class.train(rng=rng)
         wandb.finish()
         return
-    elif LossType[es_config["loss"]] == LossType.XE:
-        training_class = EvIL(
-            env,
-            es_training_config,
-            es_config,
-            logging_run=run,
-            env_params=env_params,
-            expert_data=(expert_obsv, expert_actions),
-        )
-        best_member = training_class.train(rng=rng)
-        rew_net_params = training_class._param_reshaper.reshape_single(best_member)
-        reward_net = training_class._reward_network
     elif LossType[es_config["loss"]] == LossType.BC:
         training_class = BC(
             env=env,
@@ -235,7 +222,7 @@ if __name__ == "__main__":
         "--loss",
         default="IRL",
         type=str,
-        choices=["XE", "IRL", "BC", "NONE"],
+        choices=["IRL", "BC", "NONE"],
     )
     parser.add_argument(
         "-e",
