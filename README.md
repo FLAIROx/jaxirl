@@ -36,17 +36,6 @@ and classic control environments:
 - reacher
 - gridworld
 
-## Citation
-
-If you find this code useful in your research, please cite:
-```bibtex
-@misc{sapora2023evil,
-      title={EvIL: Evolution Strategies for Generalisable Imitation Learning}, 
-      author={Silvia Sapora and Chris Lu and Gokul Swamy and Yee Whye Teh and Jakob Nicolaus Foerster},
-      year={2023},
-}
-```
-
 ## Setup
 
 The high-level structure of this repository is as follows:
@@ -84,6 +73,17 @@ export PYTHONPATH=jaxirl:$PYTHONPATH
 
 Our IRL implementation is the moment matching version. 
 This includes implementation tricks to make learning more stable, including decay on the discriminator and learner learning rates and gradient penalties on the discriminator.
+
+## Citation
+
+If you find this code useful in your research, please cite:
+```bibtex
+@misc{sapora2023evil,
+      title={EvIL: Evolution Strategies for Generalisable Imitation Learning}, 
+      author={Silvia Sapora and Chris Lu and Gokul Swamy and Yee Whye Teh and Jakob Nicolaus Foerster},
+      year={2023},
+}
+```
 
 ## See Also 🙌
 Our work is reused code, tricks and implementation details from the following libraries, we encourage you to take a look!
