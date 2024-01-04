@@ -9,6 +9,9 @@ Inverse RL is an online approach to imitation learning where we try to extract a
 IRL doesn't suffer from compounding errors (like behavioural cloning) and doesn't need expert actions to train (only example trajectories of states). 
 Depending on the hyperparameters, our implementation is 2 to 10x faster than standard IRL implementations in PyTorch (e.g. 100 minutes to train hopper).
 
+## What is IRL?
+IRL is commonly framed as a two-player zero-sum game between a policy player and a reward function player. Intuitively, the reward function player tries to pick out differences between the current learner policy and the expert demonstration, while the policy player attempts to maximise this reward function to move closer to expert behaviour. This setup is effectively a GAN in the trajectory space, where the reward player is the Discriminator and the policy player is a Generator.
+
 ## Running Experiments
 The experts are already provided, but to re-run then, simply delete the corresponding expert file and they will be automatically retrained.
 The default configs for the experts are in `jaxirl/configs/inner_training_configs.py`.
