@@ -20,7 +20,7 @@ Depending on the hyperparameters, our implementation is 2 to 10x faster than sta
 IRL is commonly framed as a two-player zero-sum game between a policy player and a reward function player. Intuitively, the reward function player tries to pick out differences between the current learner policy and the expert demonstration, while the policy player attempts to maximise this reward function to move closer to expert behaviour. This setup is effectively a GAN in the trajectory space, where the reward player is the Discriminator and the policy player is a Generator.
 
 ## Running Experiments
-The experts are already provided, but to re-run then, simply delete the corresponding expert file and they will be automatically retrained.
+The experts are already provided, but to re-run them, simply delete the corresponding expert file and they will be automatically retrained.
 The default configs for the experts are in `jaxirl/configs/inner_training_configs.py`.
 To change the default configs for the IRL training, change `jaxirl/configs/outer_training_configs.py`.
 
@@ -96,7 +96,7 @@ If you find this code useful in your research, please cite:
 ```
 
 ## See Also 🙌
-Our work is reused code, tricks and implementation details from the following libraries, we encourage you to take a look!
+Our work reused code, tricks and implementation details from the following libraries, we encourage you to take a look!
 
 - [FastIRL](https://github.com/gkswamy98/fast_irl): PyTorch implementation of moment matching IRL and FILTER algorithms.
 - [PureJaxRL](https://github.com/luchris429/purejaxrl): JAX implementation of PPO, and demonstration of end-to-end JAX-based RL training.
