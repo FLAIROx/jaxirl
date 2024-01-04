@@ -1,5 +1,12 @@
 <h1 align="center">JaxIRL</h1>
 
+<p align="center">
+      <img src="https://img.shields.io/badge/python-3.8_%7C_3.9-blue" />
+      <a href= "https://github.com/FLAIROx/jaxirl/blob/main/LICENSE">
+      <img src="https://img.shields.io/badge/license-Apache2.0-blue.svg" /></a>
+       
+</p>
+
 [**Installation**](#install) | [**Setup**](#setup) | [**Algorithms**](#algorithms) | [**Citation**](#cite)
 
 ## Inverse Reinforcement Learning in JAX
