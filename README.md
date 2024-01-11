@@ -17,17 +17,17 @@ Contains JAX implementation of algorithms for inverse reinforcement learning (IR
 Inverse RL is an online approach to imitation learning where we try to extract a reward function that makes the expert optimal.
 IRL doesn't suffer from compounding errors (like behavioural cloning) and doesn't need expert actions to train (only example trajectories of states). 
 Depending on the hyperparameters, our implementation is 100x faster than standard IRL implementations in PyTorch (e.g. 3.5 minutes to train a single hopper agent).
-By running multiple agents in parallel, you can be even faster!
+By running multiple agents in parallel, you can be even faster! (e.g. 10 hopper agents can be trained in ~20 minutes!).
 
 <div class="collage">
     <div class="column" align="centre">
         <div class="row" align="centre">
-            <img src="https://github.com/FLAIROx/jaxirl/blob/main/plots/hopper_decent-dragon-25.pdf" alt="Hopper" width="50%">
-            <img src="https://github.com/FLAIROx/jaxirl/blob/main/plots/walker2d_resilient-lion-26.pdf" alt="walker" width="50%">
+            <img src="https://github.com/FLAIROx/jaxirl/blob/main/plots/hopper.png" alt="Hopper" width="50%">
+            <img src="https://github.com/FLAIROx/jaxirl/blob/main/plots/walker2d.png" alt="walker" width="50%">
         </div>
         <div class="row" align="centre">
-            <img src="https://github.com/FLAIROx/jaxirl/blob/main/plots/ant_ethereal-violet-23.pdf" alt="ant" width="50%">
-            <img src="https://github.com/FLAIROx/jaxirl/blob/main/plots/halfcheetah_easy-terrain-24.pdf" alt="halfcheetah" width="50%">
+            <img src="https://github.com/FLAIROx/jaxirl/blob/main/plots/ant.png" alt="ant" width="50%">
+            <img src="https://github.com/FLAIROx/jaxirl/blob/main/plots/halfcheetah.png" alt="halfcheetah" width="50%">
         </div>
     </div>
 </div>
