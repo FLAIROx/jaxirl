@@ -47,6 +47,6 @@ def plot(env, irl_metrics, last_return, steps, sz, filename):
     plt.ylabel("Reward")
     plt.xlabel("Timesteps")
     plt.title(f"{env}")
-    plt.legend(ncol=1, fontsize=12, loc="bottom right")
+    plt.legend(ncol=1, fontsize=12, loc="lower right")
     plt.savefig(filename, bbox_inches="tight")
     plt.close()

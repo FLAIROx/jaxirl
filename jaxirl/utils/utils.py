@@ -14,7 +14,9 @@ from jaxirl.training.ppo_v2_irl import ActorCritic
 from jaxirl.training.ppo_v2_cont_irl import ActorCritic as ActorCriticCont
 from jaxirl.configs.outer_training_configs import (
     HALFCHEETAH_IRL_CONFIG,
-    HOPPER_ANT_WALKER_IRL_CONFIG,
+    HOPPER_IRL_CONFIG,
+    ANT_IRL_CONFIG,
+    WALKER_IRL_CONFIG,
 )
 from jaxirl.utils.env_utils import get_eval_config
 
@@ -215,18 +217,21 @@ def get_irl_config(es_config, original_training_config):
 
 
 def generate_config(args, seed):
-    if args.loss == "IRL" and (
-        args.env == "hopper" or args.env == "walker2d" or args.env == "ant"
-    ):
-        config = HOPPER_ANT_WALKER_IRL_CONFIG.copy()
+    if args.loss == "IRL" and args.env == "hopper":
+        config = HOPPER_IRL_CONFIG.copy()
+    elif args.loss == "IRL" and args.env == "ant":
+        config = ANT_IRL_CONFIG.copy()
     elif args.loss == "IRL" and args.env == "halfcheetah":
         config = HALFCHEETAH_IRL_CONFIG.copy()
+    elif args.loss == "IRL" and args.env == "walker2d":
+        config = WALKER_IRL_CONFIG.copy()
     else:
         config = {}
     if args.generations is not None:
         config["generations"] = args.generations
     config["seed"] = seed
     config["wandb_log"] = args.log
+    config["plot"] = args.plot
     config["save_to_file"] = args.save
     config["env"] = args.env
     config["loss"] = args.loss

@@ -28,6 +28,7 @@ def get_parser():
         ],
     )
     parser.add_argument("-l", "--log", action="store_true")
+    parser.add_argument("-p", "--plot", action="store_true")
     parser.add_argument(
         "-s",
         "--save",
