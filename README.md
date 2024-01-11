@@ -22,12 +22,12 @@ By running multiple agents in parallel, you can be even faster! (e.g. 10 hopper 
 <div class="collage">
     <div class="column" align="centre">
         <div class="row" align="centre">
-            <img src="https://github.com/FLAIROx/jaxirl/blob/main/plots/hopper.png" alt="Hopper" width="50%">
-            <img src="https://github.com/FLAIROx/jaxirl/blob/main/plots/walker2d.png" alt="walker" width="50%">
+            <img src="https://github.com/FLAIROx/jaxirl/blob/main/plots/hopper.png" alt="Hopper" width="40%">
+            <img src="https://github.com/FLAIROx/jaxirl/blob/main/plots/walker2d.png" alt="walker" width="40%">
         </div>
         <div class="row" align="centre">
-            <img src="https://github.com/FLAIROx/jaxirl/blob/main/plots/ant.png" alt="ant" width="50%">
-            <img src="https://github.com/FLAIROx/jaxirl/blob/main/plots/halfcheetah.png" alt="halfcheetah" width="50%">
+            <img src="https://github.com/FLAIROx/jaxirl/blob/main/plots/ant.png" alt="ant" width="40%">
+            <img src="https://github.com/FLAIROx/jaxirl/blob/main/plots/halfcheetah.png" alt="halfcheetah" width="40%">
         </div>
     </div>
 </div>
