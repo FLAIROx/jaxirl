@@ -97,7 +97,7 @@ export PYTHONPATH=jaxirl:$PYTHONPATH
 
 ## Algorithms
 
-Our IRL implementation is the moment matching version. 
+Our IRL implementation is the [moment matching](https://arxiv.org/abs/2103.03236) version. 
 This includes implementation tricks to make learning more stable, including decay on the discriminator and learner learning rates and gradient penalties on the discriminator.
 
 ## Reproduce Results
