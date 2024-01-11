@@ -2,6 +2,8 @@
 
 <p align="center">
       <img src="https://img.shields.io/badge/python-3.8_%7C_3.9-blue" />
+      <a href= "https://github.com/psf/black">
+      <img src="https://img.shields.io/badge/code%20style-black-000000.svg" /></a>
       <a href= "https://github.com/FLAIROx/jaxirl/blob/main/LICENSE">
       <img src="https://img.shields.io/badge/license-Apache2.0-blue.svg" /></a>
        
@@ -14,7 +16,21 @@
 Contains JAX implementation of algorithms for inverse reinforcement learning (IRL).
 Inverse RL is an online approach to imitation learning where we try to extract a reward function that makes the expert optimal.
 IRL doesn't suffer from compounding errors (like behavioural cloning) and doesn't need expert actions to train (only example trajectories of states). 
-Depending on the hyperparameters, our implementation is 2 to 10x faster than standard IRL implementations in PyTorch (e.g. 100 minutes to train hopper).
+Depending on the hyperparameters, our implementation is 100x faster than standard IRL implementations in PyTorch (e.g. 3.5 minutes to train a single hopper agent).
+By running multiple agents in parallel, you can be even faster!
+
+<div class="collage">
+    <div class="column" align="centre">
+        <div class="row" align="centre">
+            <img src="https://github.com/FLAIROx/jaxirl/blob/main/plots/hopper_decent-dragon-25.pdf" alt="Hopper" width="50%">
+            <img src="https://github.com/FLAIROx/jaxirl/blob/main/plots/walker2d_resilient-lion-26.pdf" alt="walker" width="50%">
+        </div>
+        <div class="row" align="centre">
+            <img src="https://github.com/FLAIROx/jaxirl/blob/main/plots/ant_ethereal-violet-23.pdf" alt="ant" width="50%">
+            <img src="https://github.com/FLAIROx/jaxirl/blob/main/plots/halfcheetah_easy-terrain-24.pdf" alt="halfcheetah" width="50%">
+        </div>
+    </div>
+</div>
 
 ## What is IRL?
 IRL is commonly framed as a two-player zero-sum game between a policy player and a reward function player. Intuitively, the reward function player tries to pick out differences between the current learner policy and the expert demonstration, while the policy player attempts to maximise this reward function to move closer to expert behaviour. This setup is effectively a GAN in the trajectory space, where the reward player is the Discriminator and the policy player is a Generator.
