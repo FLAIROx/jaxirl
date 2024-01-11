@@ -9,7 +9,7 @@
        
 </p>
 
-[**Installation**](#install) | [**Setup**](#setup) | [**Algorithms**](#algorithms) | [**Citation**](#cite)
+[**Installation**](#install) | [**Setup**](#setup) | [**Algorithms**](#algorithms) | [**Citation**](#citation)
 
 ## Inverse Reinforcement Learning in JAX
 
@@ -99,6 +99,13 @@ export PYTHONPATH=jaxirl:$PYTHONPATH
 
 Our IRL implementation is the moment matching version. 
 This includes implementation tricks to make learning more stable, including decay on the discriminator and learner learning rates and gradient penalties on the discriminator.
+
+## Reproduce Results
+Simply run
+```
+python3 jaxirl/irl/main.py --env env_name --loss IRL -sd 1
+```
+and the default parameters in ```outer_training_configs.py``` and the trained experts in ```experts/``` will be used.
 
 ## Citation
 

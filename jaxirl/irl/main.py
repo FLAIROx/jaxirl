@@ -1,5 +1,6 @@
 import os
 import pickle
+import time
 from jaxirl.utils.parser import get_parser
 from jaxirl.utils.plot import plot
 from matplotlib import pyplot as plt

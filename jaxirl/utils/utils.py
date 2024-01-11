@@ -57,9 +57,9 @@ class LossType(Enum):
 def get_plot_filename(es_config):
     if wandb.run is None:
         date_time = datetime.now().strftime("%m_%d_%Y_%H_%M_%S")
-        return f"{os.getcwd()}/plots/{es_config['env']}_{date_time}.pdf"
+        return f"{os.getcwd()}/plots/{es_config['env']}_{date_time}.png"
     else:
-        return f"{os.getcwd()}/plots/{es_config['env']}_{wandb.run.name}.pdf"
+        return f"{os.getcwd()}/plots/{es_config['env']}_{wandb.run.name}.png"
 
 
 def _get_xentropy_match_score_expert(obsv, expert_actions, network_params, network):
