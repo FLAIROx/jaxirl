@@ -79,6 +79,8 @@ def get_test_params(es_config):
         return CartPoleEnvParams(gravity=20)
     elif es_config["env"] == "Pendulum-v1":
         return PendulumEnvParams(max_torque=10.0)
+    elif is_brax_env(es_config["env"]):
+        return get_env(es_config["env"])[1]
     else:
         raise NotImplementedError(
             f"Test version of env {es_config['env']} not implemented"

@@ -350,14 +350,14 @@ def make_train(config, env, env_params, runner_state_start, log_timestep_returns
                 jax.debug.callback(callback, metric)
 
             runner_state = (train_state, env_state, last_obs, rng, prev_done)
-            return runner_state, metric
+            return runner_state, (metric, traj_batch.obs, traj_batch.action)
 
         if log_timestep_returns:
-            runner_state, metric = jax.lax.scan(
+            runner_state, (metric, actor_obs, actor_actions) = jax.lax.scan(
                 _update_step, runner_state, None, config["NUM_UPDATES"]
             )
         else:
-            runner_state, _ = jax.lax.scan(
+            runner_state, (_, actor_obs, actor_actions) = jax.lax.scan(
                 _update_step, runner_state, None, config["NUM_UPDATES"]
             )
             metric = {}
@@ -373,6 +373,11 @@ def make_train(config, env, env_params, runner_state_start, log_timestep_returns
             metric["diff_returned_episode_returns"] = metric["returned_episode_returns"]
         metric["last_return"] = runner_state[1].env_state.returned_episode_returns
         metric["real_reward_var"] = runner_state[1].var
-        return {"runner_state": runner_state, "metrics": metric}
+        return {
+            "runner_state": runner_state,
+            "metrics": metric,
+            "obs": actor_obs,
+            "actions": actor_actions,
+        }
 
     return train

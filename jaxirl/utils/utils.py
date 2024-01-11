@@ -7,10 +7,15 @@ import optax
 import flax.linen as flax_nn
 from typing import Any
 import wandb
+import os
+from datetime import datetime
 
 from jaxirl.training.ppo_v2_irl import ActorCritic
 from jaxirl.training.ppo_v2_cont_irl import ActorCritic as ActorCriticCont
-from jaxirl.configs.outer_training_configs import IRL_CONFIG
+from jaxirl.configs.outer_training_configs import (
+    HALFCHEETAH_IRL_CONFIG,
+    HOPPER_ANT_WALKER_IRL_CONFIG,
+)
 from jaxirl.utils.env_utils import get_eval_config
 
 
@@ -45,6 +50,14 @@ class LossType(Enum):
     IRL = "IRL"
     NONE = "NONE"
     BC = "BC"
+
+
+def get_plot_filename(es_config):
+    if wandb.run is None:
+        date_time = datetime.now().strftime("%m_%d_%Y_%H_%M_%S")
+        return f"{os.getcwd()}/plots/{es_config['env']}_{date_time}.pdf"
+    else:
+        return f"{os.getcwd()}/plots/{es_config['env']}_{wandb.run.name}.pdf"
 
 
 def _get_xentropy_match_score_expert(obsv, expert_actions, network_params, network):
@@ -156,6 +169,8 @@ def get_irl_config(es_config, original_training_config):
 
     original_training_config["NORMALIZE_REWARD"] = es_config["reward_normalize"]
     es_training_config = original_training_config.copy()
+    if "inner_steps" in es_config:
+        es_training_config["NUM_STEPS"] = es_config["inner_steps"]
     if "percentage_training" in es_config:
         es_training_config["NUM_UPDATES"] = int(
             original_training_config["NUM_UPDATES"] * es_config["percentage_training"]
@@ -182,12 +197,30 @@ def get_irl_config(es_config, original_training_config):
                 / (es_config["num_updates_inner_loop"] * es_config["inner_steps"])
             )
     print("Num IRL outer loop steps: ", es_config["irl_generations"])
+    print("total timesteps RL", original_training_config["TOTAL_TIMESTEPS"])
+    total_irl_timesteps = (
+        es_config["irl_generations"]
+        * es_training_config["NUM_UPDATES"]
+        * es_training_config["NUM_STEPS"]
+        * es_training_config["NUM_ENVS"]
+    )
+    print("Total timesteps IRL", total_irl_timesteps)
+    print(
+        "Total timesteps IRL inner loop",
+        es_config["num_updates_inner_loop"]
+        * es_config["inner_steps"]
+        * es_training_config["NUM_ENVS"],
+    )
     return es_config, es_training_config
 
 
 def generate_config(args, seed):
-    if args.loss == "IRL":
-        config = IRL_CONFIG.copy()
+    if args.loss == "IRL" and (
+        args.env == "hopper" or args.env == "walker2d" or args.env == "ant"
+    ):
+        config = HOPPER_ANT_WALKER_IRL_CONFIG.copy()
+    elif args.loss == "IRL" and args.env == "halfcheetah":
+        config = HALFCHEETAH_IRL_CONFIG.copy()
     else:
         config = {}
     if args.generations is not None:

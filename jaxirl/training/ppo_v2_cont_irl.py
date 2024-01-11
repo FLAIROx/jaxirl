@@ -137,21 +137,16 @@ def make_train(
     runner_state_start,
     log_timestep_returns=False,
 ):
+    # config["NUM_UPDATES"] = (
+    #     config["TOTAL_TIMESTEPS"] // config["NUM_STEPS"] // config["NUM_ENVS"]
+    # )
     config["MINIBATCH_SIZE"] = (
         config["NUM_ENVS"] * config["NUM_STEPS"] // config["NUM_MINIBATCHES"]
     )
-    print("NUM STEPS", config["NUM_STEPS"])
-    print("NUM UPDATES", config["NUM_UPDATES"])
-    # if runner_state_start is None:
-    #     print("setting up wrappers env")
     env = LogWrapperRewardIRL(env)
     env = ClipActionRewardIRL(env)
     env = VecEnvRewardIRL(env)
     env = NormalizeVecRewardIRL(env, config["GAMMA"], config["NORMALIZE_REWARD"])
-    # env = NormalizeVecReward(env, config["GAMMA"])
-    # if config["NORMALIZE_ENV"]:
-    # env = NormalizeVecObservation(env)
-    # env = NormalizeVecReward(env, config["GAMMA"])
 
     def linear_schedule(count):
         frac = 1.0 - (
@@ -370,14 +365,14 @@ def make_train(
 
             # jax.debug.print("returns {r}, timesteps {t}", r=env_state.env_state.sum_of_returns, t=env_state.env_state.timestep)
             runner_state = (train_state, env_state, last_obs, rng, prev_done)
-            return runner_state, metric
+            return runner_state, (metric, traj_batch.obs, traj_batch.action)
 
         if log_timestep_returns:
-            runner_state, metric = jax.lax.scan(
+            runner_state, (metric, actor_obs, actor_actions) = jax.lax.scan(
                 _update_step, runner_state, None, config["NUM_UPDATES"]
             )
         else:
-            runner_state, _ = jax.lax.scan(
+            runner_state, (_, actor_obs, actor_actions) = jax.lax.scan(
                 _update_step, runner_state, None, config["NUM_UPDATES"]
             )
             metric = {}
@@ -397,7 +392,8 @@ def make_train(
         return {
             "runner_state": runner_state,
             "metrics": metric,
-            # "env": env,
+            "obs": actor_obs,
+            "actions": actor_actions,
         }
 
     return train

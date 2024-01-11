@@ -1,7 +1,6 @@
 from functools import partial
-from typing import Optional, Tuple, Any, Callable
+from typing import Tuple, Any, Callable
 import jax
-from jax import jit
 import jax.numpy as jnp
 from flax import linen as flax_nn
 import optax
@@ -15,6 +14,10 @@ class Discriminator(flax_nn.Module):
     discr_updates: int
     n_features: int  # usually OBS_SIZE + ACTION SIZE
     transition_steps_decay: int
+    discr_final_lr: float
+    buffer: Any
+    expert_data: jnp.ndarray
+    batch_size: int
     activation_fn: Callable[[jnp.ndarray], jnp.ndarray] = flax_nn.relu
     l1_loss: float = 0.0
     schedule_type: str = "linear"
@@ -33,9 +36,19 @@ class Discriminator(flax_nn.Module):
         return x
 
     def scheduler(self, step_number):
-        return jax.lax.select(
-            step_number == 0, self.learning_rate, self.learning_rate / step_number
+        lr = jax.lax.select(
+            step_number == 0,
+            self.learning_rate,
+            self.learning_rate / jnp.maximum((step_number // self.discr_updates), 1),
         )
+        return lr
+
+    def linear_schedule(self, count):
+        frac = 1.0 - (count // self.discr_updates) / self.transition_steps_decay
+        lr = (self.learning_rate - self.discr_final_lr) * jnp.maximum(
+            frac, 0
+        ) + self.discr_final_lr
+        return lr
 
     def _init_state(
         self,
@@ -43,14 +56,8 @@ class Discriminator(flax_nn.Module):
     ) -> Tuple[TrainState, jax.random.PRNGKeyArray]:
         rng, _rng = jax.random.split(rng)
         init_x = jnp.zeros(self.n_features)
-        linear_decay_scheduler = optax.linear_schedule(
-            init_value=self.learning_rate,
-            end_value=1e-5,
-            transition_steps=self.transition_steps_decay,
-            transition_begin=1,
-        )
         if self.schedule_type == "linear":
-            schedule = linear_decay_scheduler
+            schedule = self.linear_schedule
         elif self.schedule_type == "constant":
             schedule = self.learning_rate
         elif self.schedule_type == "harmonic":
@@ -144,34 +151,42 @@ class Discriminator(flax_nn.Module):
         loss_grad_fn: Callable[
             [FrozenDict, jnp.ndarray, jnp.ndarray], Tuple[jnp.ndarray, FrozenDict]
         ],
-        expert_batch: jnp.ndarray,
-        imitation_batch: jnp.ndarray,
-        key,
-        train_state: TrainState,
+        buffer_state: jnp.ndarray,
+        carry: Tuple[TrainState, jax.random.PRNGKeyArray],
         unused: Any,
     ) -> Tuple[TrainState, jnp.ndarray]:
+        train_state, key = carry
+        key_exp_sel, key_imit_sel, train_key, key = jax.random.split(key, 4)
+        expert_batch = jax.random.choice(
+            key_exp_sel,
+            self.expert_data,
+            shape=(self.batch_size,),
+            replace=False,
+        )
+        imitation_batch = self.buffer.sample(
+            self.batch_size,
+            key_imit_sel,
+            buffer_state,
+        )
         loss_val, grads = loss_grad_fn(
-            train_state.params, expert_batch, imitation_batch, key
+            train_state.params, expert_batch, imitation_batch, train_key
         )
         train_state = train_state.apply_gradients(grads=grads)
-        return train_state, loss_val
+        return (train_state, key), loss_val
 
     def train_epoch(
         self,
-        expert_data: jnp.ndarray,
-        imitation_data: jnp.ndarray,
+        imit_data_buffer_state: Any,
         train_state: TrainState,
         key: Any,
     ) -> Tuple[TrainState, jnp.ndarray]:
         loss_grad_fn = jax.value_and_grad(self.batch_loss)
-        _update_step = partial(
-            self.update_step, loss_grad_fn, expert_data, imitation_data, key
-        )
+        _update_step = partial(self.update_step, loss_grad_fn, imit_data_buffer_state)
 
         train_state, losses = jax.lax.scan(
-            _update_step, train_state, xs=None, length=self.discr_updates
+            _update_step, (train_state, key), xs=None, length=self.discr_updates
         )
-        return train_state, losses
+        return train_state[0], losses
 
     def predict_reward(
         self,
