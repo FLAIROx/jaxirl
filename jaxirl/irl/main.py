@@ -190,7 +190,14 @@ def main(es_config=None):
             )
             steps = es_config["irl_generations"]
             filename_plot = get_plot_filename(es_config)
-            plot(es_config["env"], irl_train_metrics, steps, sz, filename_plot)
+            plot(
+                es_config["env"],
+                irl_train_metrics,
+                last_return,
+                steps,
+                sz,
+                filename_plot,
+            )
         wandb.finish()
         return
     # standard RL

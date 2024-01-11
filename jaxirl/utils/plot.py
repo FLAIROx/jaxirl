@@ -31,20 +31,22 @@ def setup_plot():
     ax.tick_params(direction="in")
 
 
-def plot(env, irl_metrics, steps, sz, filename):
+def plot(env, irl_metrics, last_return, steps, sz, filename):
     setup_plot()
     irl_mean = irl_metrics.mean(axis=-1)
     irl_std_err = np.std(irl_metrics, axis=-1) / np.sqrt(irl_metrics.shape[-1])
-    plt.plot(np.arange(steps) * sz, irl_mean, label="$\\texttt{IRL}$", color="grey")
+    plt.plot(np.arange(steps) * sz, irl_mean, label="IRL", color="#F79646")
     plt.fill_between(
         np.arange(steps) * sz,
         irl_mean - irl_std_err,
         irl_mean + irl_std_err,
-        color="grey",
+        color="#F79646",
         alpha=0.1,
     )
+    plt.axhline(last_return, label="Expert", color="#4bacc6", linestyle="--")
     plt.ylabel("Reward")
     plt.xlabel("Timesteps")
     plt.title(f"{env}")
+    plt.legend(ncol=1, fontsize=12, loc="bottom right")
     plt.savefig(filename, bbox_inches="tight")
     plt.close()
