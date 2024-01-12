@@ -37,9 +37,7 @@ By running multiple agents in parallel, you can be even faster! (e.g. 10 hopper 
 
 IRL is commonly framed as a **two-player zero-sum game** between a policy player and a reward function player. Intuitively, the reward function player tries to pick out differences between the current learner policy and the expert demonstration, while the policy player attempts to maximise this reward function to move closer to expert behaviour. This setup is effectively a GAN in the trajectory space, where the reward player is the Discriminator and the policy player is a Generator.
 
-
-
-
+<br/><br/><br/> 
 
 ## Why JAX?
 JAX is a game-changer in the world of machine learning, empowering researchers and developers to train models with unprecedented efficiency and scalability. Here's how it sets a new standard for performance:
