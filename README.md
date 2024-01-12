@@ -17,7 +17,7 @@ Contains JAX implementation of algorithms for **inverse reinforcement learning**
 Inverse RL is an online approach to imitation learning where we try to **extract a reward function** that makes the expert optimal.
 IRL *doesn't suffer from compounding errors* (like behavioural cloning) and doesn't need expert actions to train (only example trajectories of states). 
 Depending on the environment and hyperparameters, our implementation is about 🔥 100x 🔥 faster than standard IRL implementations in PyTorch (e.g. 3.5 minutes to train a single hopper agent ⚡).
-By running multiple agents in parallel, you can be even faster! (e.g. 200 walker agents can be trained in ~400 minutes! ⚡⚡).
+By running multiple agents in parallel, you can be even faster! (e.g. 200 walker agents can be trained in ~400 minutes on 1 GPU! ⚡⚡).
 
 <div class="collage">
     <div class="column" align="center">
