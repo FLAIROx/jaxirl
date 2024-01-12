@@ -13,11 +13,11 @@
 
 ## Inverse Reinforcement Learning in JAX
 
-Contains JAX implementation of algorithms for inverse reinforcement learning (IRL).
-Inverse RL is an online approach to imitation learning where we try to extract a reward function that makes the expert optimal.
-IRL doesn't suffer from compounding errors (like behavioural cloning) and doesn't need expert actions to train (only example trajectories of states). 
-Depending on the hyperparameters, our implementation is 100x faster than standard IRL implementations in PyTorch (e.g. 3.5 minutes to train a single hopper agent).
-By running multiple agents in parallel, you can be even faster! (e.g. 10 hopper agents can be trained in ~20 minutes!).
+Contains JAX implementation of algorithms for **inverse reinforcement learning** (IRL).
+Inverse RL is an online approach to imitation learning where we try to **extract a reward function** that makes the expert optimal.
+IRL *doesn't suffer from compounding errors* (like behavioural cloning) and doesn't need expert actions to train (only example trajectories of states). 
+Depending on the environment and hyperparameters, our implementation is about 🔥 100x 🔥 faster than standard IRL implementations in PyTorch (e.g. 3.5 minutes to train a single hopper agent ⚡).
+By running multiple agents in parallel, you can be even faster! (e.g. 10 hopper agents can be trained in ~20 minutes! ⚡⚡).
 
 <div class="collage">
     <div class="column" align="center">
@@ -36,7 +36,20 @@ By running multiple agents in parallel, you can be even faster! (e.g. 10 hopper 
 <p align="center">
       <img src="https://github.com/FLAIROx/jaxirl/blob/main/plots/irl.png" alt="IRL" width="45%">
 </p>
-IRL is commonly framed as a two-player zero-sum game between a policy player and a reward function player. Intuitively, the reward function player tries to pick out differences between the current learner policy and the expert demonstration, while the policy player attempts to maximise this reward function to move closer to expert behaviour. This setup is effectively a GAN in the trajectory space, where the reward player is the Discriminator and the policy player is a Generator.
+
+IRL is commonly framed as a **two-player zero-sum game** between a policy player and a reward function player. Intuitively, the reward function player tries to pick out differences between the current learner policy and the expert demonstration, while the policy player attempts to maximise this reward function to move closer to expert behaviour. This setup is effectively a GAN in the trajectory space, where the reward player is the Discriminator and the policy player is a Generator.
+
+## Why JAX?
+JAX is a game-changer in the world of machine learning, empowering researchers and developers to train models with unprecedented efficiency and scalability. Here's how it sets a new standard for performance:
+
+- GPU Acceleration: JAX harnesses the full power of GPUs by JIT compiling code in XLA. Executing environments directly on the GPU, we eliminate CPU-GPU bottlenecks due to data transfer. This results in remarkable speedups compared to traditional frameworks like PyTorch.
+- Parallel Training at Scale: JAX effortlessly scales to multi-environment and multi-agent training scenarios, enabling **efficient parallelization** for massive performance gains.
+
+All our code can be used with `jit`, `vmap`, `pmap` and `scan` inside other pipelines. 
+This allows you to:
+- 🎲 Efficiently run tons of seeds in parallel on one GPU
+- 💻 Perform rapid hyperparameter tuning
+
 
 ## Running Experiments
 The experts are already provided, but to re-run them, simply delete the corresponding expert file and they will be automatically retrained.
