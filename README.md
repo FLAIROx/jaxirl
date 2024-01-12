@@ -32,9 +32,9 @@ By running multiple agents in parallel, you can be even faster! (e.g. 10 hopper 
     </div>
 </div>
 
-## What is IRL?
-<p align="center">
-      <img src="https://github.com/FLAIROx/jaxirl/blob/main/plots/irl.png" alt="IRL" width="45%">
+## A game-theoretic perspective on IRL
+<p align="left">
+      <img src="https://github.com/FLAIROx/jaxirl/blob/main/plots/irl.png" alt="IRL" width="20%">
 </p>
 
 IRL is commonly framed as a **two-player zero-sum game** between a policy player and a reward function player. Intuitively, the reward function player tries to pick out differences between the current learner policy and the expert demonstration, while the policy player attempts to maximise this reward function to move closer to expert behaviour. This setup is effectively a GAN in the trajectory space, where the reward player is the Discriminator and the policy player is a Generator.
