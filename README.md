@@ -20,12 +20,12 @@ Depending on the hyperparameters, our implementation is 100x faster than standar
 By running multiple agents in parallel, you can be even faster! (e.g. 10 hopper agents can be trained in ~20 minutes!).
 
 <div class="collage">
-    <div class="column" align="centre">
-        <div class="row" align="centre">
+    <div class="column" align="center">
+        <div class="row" align="center">
             <img src="https://github.com/FLAIROx/jaxirl/blob/main/plots/hopper.png" alt="Hopper" width="40%">
             <img src="https://github.com/FLAIROx/jaxirl/blob/main/plots/walker2d.png" alt="walker" width="40%">
         </div>
-        <div class="row" align="centre">
+        <div class="row" align="center">
             <img src="https://github.com/FLAIROx/jaxirl/blob/main/plots/ant.png" alt="ant" width="40%">
             <img src="https://github.com/FLAIROx/jaxirl/blob/main/plots/halfcheetah.png" alt="halfcheetah" width="40%">
         </div>
@@ -33,7 +33,7 @@ By running multiple agents in parallel, you can be even faster! (e.g. 10 hopper 
 </div>
 
 ## What is IRL?
-<p align="centre">
+<p align="center">
       <img src="https://github.com/FLAIROx/jaxirl/blob/main/plots/irl.png">
 </p>
 IRL is commonly framed as a two-player zero-sum game between a policy player and a reward function player. Intuitively, the reward function player tries to pick out differences between the current learner policy and the expert demonstration, while the policy player attempts to maximise this reward function to move closer to expert behaviour. This setup is effectively a GAN in the trajectory space, where the reward player is the Discriminator and the policy player is a Generator.
