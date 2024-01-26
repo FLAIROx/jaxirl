@@ -11,12 +11,12 @@ HOPPER_IRL_CONFIG = {
     "reward_type": "REWARD_STATE",
     "reward_normalize": True,
     "real_reward_type": "IRL_STATE",
-    "num_eval_steps": 1000,
+    "num_eval_steps": 20,
     "loss": "IRL",
     "discr_batch_size": 4096,
     "seed": 1,
     "seeds": 5,
-    "num_eval_envs": 100,
+    "num_eval_envs": 20,
     "irl_lrate_init": 1e-2,
     "inner_lr_linear": True,
     "inner_lr": 4e-4,
@@ -31,7 +31,7 @@ HOPPER_IRL_CONFIG = {
     "run_test": False,
     "discr_loss": "bce",
     "num_updates_inner_loop": 1,
-    "buffer_size": 100000,
+    "buffer_size": 400000,
 }
 
 ANT_IRL_CONFIG = {
@@ -45,12 +45,12 @@ ANT_IRL_CONFIG = {
     "reward_type": "REWARD_STATE",
     "reward_normalize": True,
     "real_reward_type": "IRL_STATE",
-    "num_eval_steps": 1000,
+    "num_eval_steps": 20,
     "loss": "IRL",
     "discr_batch_size": 4096,
     "seed": 1,
     "seeds": 5,
-    "num_eval_envs": 100,
+    "num_eval_envs": 20,
     "irl_lrate_init": 1e-3,
     "inner_lr_linear": True,
     "inner_lr": 4e-4,
@@ -65,7 +65,7 @@ ANT_IRL_CONFIG = {
     "run_test": False,
     "discr_loss": "bce",
     "num_updates_inner_loop": 1,
-    "buffer_size": 100000,
+    "buffer_size": 400000,
 }
 
 WALKER_IRL_CONFIG = {
@@ -79,12 +79,12 @@ WALKER_IRL_CONFIG = {
     "reward_type": "REWARD_STATE",
     "reward_normalize": True,
     "real_reward_type": "IRL_STATE",
-    "num_eval_steps": 1000,
+    "num_eval_steps": 20,
     "loss": "IRL",
     "discr_batch_size": 4096,
     "seed": 1,
     "seeds": 5,
-    "num_eval_envs": 100,
+    "num_eval_envs": 20,
     "irl_lrate_init": 1e-2,
     "inner_lr_linear": True,
     "inner_lr": 4e-4,
@@ -99,7 +99,7 @@ WALKER_IRL_CONFIG = {
     "run_test": False,
     "discr_loss": "bce",
     "num_updates_inner_loop": 1,
-    "buffer_size": 100000,
+    "buffer_size": 400000,
 }
 
 
@@ -114,12 +114,12 @@ HALFCHEETAH_IRL_CONFIG = {
     "reward_type": "REWARD_STATE",
     "reward_normalize": True,
     "real_reward_type": "IRL_STATE",
-    "num_eval_steps": 1000,
+    "num_eval_steps": 20,
     "loss": "IRL",
     "discr_batch_size": 4096,
     "seed": 1,
     "seeds": 5,
-    "num_eval_envs": 100,
+    "num_eval_envs": 20,
     "irl_lrate_init": 1e-4,
     "inner_lr_linear": True,
     "inner_lr": 4e-4,
@@ -134,5 +134,5 @@ HALFCHEETAH_IRL_CONFIG = {
     "run_test": False,
     "discr_loss": "bce",
     "num_updates_inner_loop": 1,
-    "buffer_size": 100000,
+    "buffer_size": 400000,
 }
