@@ -18,11 +18,9 @@ class ObsvActionBuffer:
         obsv_shape,
         action_shape,
         include_action,
-        ep_length=1000,
         envs=100,
         max_size=10000,
     ):
-        self.ep_length = ep_length
         self.num_envs = envs
         self.max_size = max_size
         self.include_action = include_action
@@ -42,7 +40,7 @@ class ObsvActionBuffer:
         )
 
     def add(self, obsv, actions, key, state):
-        # obsv shape = (num_updates, ep_length, num_envs, obsv_shape)
+        # obsv shape = (num_updates, inner_steps, num_envs, obsv_shape)
         chosen_envs = jax.random.randint(
             key, shape=(self.num_envs,), minval=0, maxval=obsv.shape[2]
         )
