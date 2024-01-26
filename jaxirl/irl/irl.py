@@ -113,7 +113,7 @@ class IRL(ABC):
         self._reward_network = self.discr
 
     def wandb_callback(self, gen, episode_returns):
-        if gen % self._log_every:
+        if gen % self._log_every == 0:
             (
                 episode_returns_mean,
                 episode_returns_min,
