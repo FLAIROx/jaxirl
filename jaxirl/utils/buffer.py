@@ -26,7 +26,10 @@ class ObsvActionBuffer:
         self.num_envs = envs
         self.max_size = max_size
         self.include_action = include_action
-        self.obsv_shape = obsv_shape
+        if len(jnp.array([obsv_shape]).shape) == 1:
+            self.obsv_shape = (obsv_shape,)
+        else:
+            self.obsv_shape = obsv_shape
         self.action_shape = action_shape
 
     def init_state(self, rng):
@@ -43,8 +46,8 @@ class ObsvActionBuffer:
         chosen_envs = jax.random.randint(
             key, shape=(self.num_envs,), minval=0, maxval=obsv.shape[2]
         )
-        chosen_obsv = obsv[-1, :, chosen_envs].reshape(-1, *self.obsv_shape)
-        chosen_actions = actions[-1, :, chosen_envs].reshape(-1, self.action_shape)
+        chosen_obsv = obsv[:, :, chosen_envs].reshape(-1, *self.obsv_shape)
+        chosen_actions = actions[:, :, chosen_envs].reshape(-1, self.action_shape)
         new_obsv_buffer = jnp.concatenate((chosen_obsv, state.buffer_obsv), axis=0)[
             : self.max_size
         ]
@@ -54,7 +57,9 @@ class ObsvActionBuffer:
         state = state.replace(
             buffer_obsv=new_obsv_buffer,
             buffer_actions=new_actions_buffer,
-            buffer_size=jnp.minimum(state.buffer_size + obsv.shape[0], self.max_size),
+            buffer_size=jnp.minimum(
+                state.buffer_size + chosen_obsv.shape[0], self.max_size
+            ),
         )
         return state
 
