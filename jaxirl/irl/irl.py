@@ -90,8 +90,8 @@ class IRL(ABC):
             obsv_shape=observation_shape,
             action_shape=self.action_size,
             include_action=self._include_action,
-            ep_length=self._es_config["num_eval_envs"],
-            envs=self._es_config["num_eval_steps"],
+            ep_length=self._es_config["num_eval_steps"],
+            envs=self._es_config["num_eval_envs"],
             max_size=es_config["buffer_size"],
         )
         self.discriminator_config = {
