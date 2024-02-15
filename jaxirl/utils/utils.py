@@ -182,7 +182,7 @@ def get_irl_config(es_config, original_training_config):
         es_training_config["ORIG_NUM_UPDATES"] = int(
             original_training_config["ORIG_NUM_UPDATES"]
             * original_training_config["NUM_STEPS"]
-            / (es_config["num_updates_inner_loop"] * es_config["inner_steps"])
+            / (es_config["num_updates_inner_loop"] * es_training_config["NUM_STEPS"])
         )
     else:
         raise ValueError(
@@ -196,8 +196,16 @@ def get_irl_config(es_config, original_training_config):
             es_config["irl_generations"] = int(
                 original_training_config["ORIG_NUM_UPDATES"]
                 * original_training_config["NUM_STEPS"]
-                / (es_config["num_updates_inner_loop"] * es_config["inner_steps"])
+                / (
+                    es_config["num_updates_inner_loop"]
+                    * es_training_config["NUM_STEPS"]
+                )
             )
+    es_config["buffer_size"] = (
+        es_config["num_eval_envs"]
+        * es_config["inner_steps"]
+        * es_config["irl_generations"]
+    )
     print("Num IRL outer loop steps: ", es_config["irl_generations"])
     print("total timesteps RL", original_training_config["TOTAL_TIMESTEPS"])
     total_irl_timesteps = (
