@@ -102,16 +102,16 @@ def eval(
         prev_done = done
         transition = Transition(done, action, value, reward, log_prob, last_obs, info)
         runner_state = (agent_params, env_state, obsv, rng, prev_done)
-        return runner_state, transition
+        return runner_state, (transition, info)
 
     rng, _rng = jax.random.split(rng)
     runner_state = (agent_params, env_state, obsv, _rng, prev_done)
-    runner_state, traj_batch = jax.lax.scan(_env_step, runner_state, None, num_steps)
+    runner_state, (traj_batch, info) = jax.lax.scan(_env_step, runner_state, None, num_steps)
     if return_reward:
         return (
             traj_batch.obs,
             traj_batch.action,
-            jnp.mean(jnp.sum(traj_batch.reward / jnp.sum(traj_batch.done), axis=0)),
+            info["timestep_returned_episode_returns"],
         )
     else:
         return traj_batch.obs, traj_batch.action
