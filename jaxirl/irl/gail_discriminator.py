@@ -103,12 +103,6 @@ class Discriminator(flax_nn.Module):
             target = jnp.tile(jnp.array([0.0]), (imit_d.shape[0],))
             return optax.l2_loss(imit_d, target)
 
-        def reg_loss(
-            params: FrozenDict,
-        ) -> jnp.ndarray:
-            flat_params, _ = jax.flatten_util.ravel_pytree(params)
-            return self.l1_loss * jnp.abs(jnp.array(flat_params)).sum()
-
         @partial(jax.grad, argnums=1)
         def f_interpolate(
             params: FrozenDict,
@@ -132,7 +126,6 @@ class Discriminator(flax_nn.Module):
 
         exp_loss = jnp.mean(jax.vmap(loss_expert)(expert_batch), axis=0)[0]
         imit_loss = jnp.mean(jax.vmap(loss_imitation)(imitation_batch), axis=0)[0]
-        reg = reg_loss(params)
         alpha = jax.random.uniform(key, (imitation_batch.shape[0],))
 
         interpolated = jax.vmap(interpolate)(alpha, expert_batch, imitation_batch)
@@ -144,7 +137,7 @@ class Discriminator(flax_nn.Module):
         # here we use 10 as a fixed parameter as a cost of the penalty.
         loss = exp_loss - imit_loss + 10 * grad_penalty
 
-        return loss + reg
+        return loss
 
     def update_step(
         self,
