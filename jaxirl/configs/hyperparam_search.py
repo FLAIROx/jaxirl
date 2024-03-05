@@ -26,7 +26,7 @@ sweep_configuration = {
         "discr_batch_size": {"value": 4096},
         "seed": {"values": [1]},
         "seeds": {"value": 5},
-        "discr_l1_loss": {"value": 0.0},
+        "discr_l2_loss": {"value": 0.0},
         "dual": {"value": False},
         "run_test": {"value": False},
         "discr_loss": {"value": "bce"},

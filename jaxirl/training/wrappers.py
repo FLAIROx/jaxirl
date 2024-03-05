@@ -172,9 +172,9 @@ class LogWrapperRewardIRL(GymnaxWrapper):
             + (state.episode_returns + real_reward) * done,
         )
         info["timestep_returned_episode_returns"] = state.returned_episode_returns
-        info[
-            "timestep_returned_episode_learned_returns"
-        ] = state.returned_episode_learned_returns
+        info["timestep_returned_episode_learned_returns"] = (
+            state.returned_episode_learned_returns
+        )
         return obs, state, reward, done, info
 
 
@@ -472,3 +472,82 @@ class NormalizeVecRewardIRL(GymnaxWrapper):
         else:
             norm_reward = reward
         return obs, state, norm_reward, done, info
+
+
+class NormalizeVecObservationIRL(GymnaxWrapper):
+    def __init__(self, env, normalize_obs):
+        super().__init__(env)
+        self.normalize_obs = normalize_obs
+
+    def reset(self, key, params=None):
+        obs, state = self._env.reset(key, params)
+        state = NormalizeVecObsEnvState(
+            mean=jnp.zeros(obs.shape[-1]),
+            var=jnp.ones(obs.shape[-1]),
+            count=1e-4,
+            env_state=state,
+        )
+        batch_mean = jnp.mean(obs, axis=0)
+        batch_var = jnp.var(obs, axis=0)
+        batch_count = obs.shape[0]
+
+        delta = batch_mean - state.mean
+        tot_count = state.count + batch_count
+
+        new_mean = state.mean + delta * batch_count / tot_count
+        m_a = state.var * state.count
+        m_b = batch_var * batch_count
+        M2 = m_a + m_b + jnp.square(delta) * state.count * batch_count / tot_count
+        new_var = M2 / tot_count
+        new_count = tot_count
+
+        state = NormalizeVecObsEnvState(
+            mean=jax.lax.select(self.normalize_obs, new_mean, state.mean),
+            var=jax.lax.select(self.normalize_obs, new_var, state.var),
+            count=jax.lax.select(self.normalize_obs, new_count, state.count),
+            env_state=state.env_state,
+        )
+
+        return (
+            jax.lax.select(
+                self.normalize_obs, (obs - state.mean) / jnp.sqrt(state.var + 1e-8), obs
+            ),
+            state,
+        )
+
+    def step(self, key, state, action, params=None, prev_done=False, agent_params=None):
+        obs, env_state, reward, done, info = self._env.step(
+            key, state.env_state, action, params, prev_done, agent_params
+        )
+
+        batch_mean = jnp.mean(obs, axis=0)
+        batch_var = jnp.var(obs, axis=0)
+        batch_count = obs.shape[0]
+
+        delta = batch_mean - state.mean
+        tot_count = state.count + batch_count
+
+        new_mean = state.mean + delta * batch_count / tot_count
+        m_a = state.var * state.count
+        m_b = batch_var * batch_count
+        M2 = m_a + m_b + jnp.square(delta) * state.count * batch_count / tot_count
+        new_var = M2 / tot_count
+        new_count = tot_count
+
+        state = NormalizeVecObsEnvState(
+            mean=new_mean,
+            var=new_var,
+            count=new_count,
+            env_state=env_state,
+        )
+        return (
+            jax.lax.select(
+                self.normalize_obs,
+                (obs - state.mean) / jnp.sqrt(state.var + 1e-8),
+                obs,
+            ),
+            state,
+            reward,
+            done,
+            info,
+        )

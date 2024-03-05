@@ -19,7 +19,7 @@ class Discriminator(flax_nn.Module):
     expert_data: jnp.ndarray
     batch_size: int
     activation_fn: Callable[[jnp.ndarray], jnp.ndarray] = flax_nn.relu
-    l1_loss: float = 0.0
+    l2_loss: float = 0.0
     schedule_type: str = "linear"
     discr_loss: str = "bce"
 
@@ -43,13 +43,6 @@ class Discriminator(flax_nn.Module):
         )
         return lr
 
-    def linear_schedule(self, count):
-        frac = 1.0 - (count // self.discr_updates) / self.transition_steps_decay
-        lr = (self.learning_rate - self.discr_final_lr) * jnp.maximum(
-            frac, 0
-        ) + self.discr_final_lr
-        return lr
-
     def _init_state(
         self,
         rng: jax.random.PRNGKeyArray,
@@ -57,7 +50,11 @@ class Discriminator(flax_nn.Module):
         rng, _rng = jax.random.split(rng)
         init_x = jnp.zeros(self.n_features)
         if self.schedule_type == "linear":
-            schedule = self.linear_schedule
+            schedule = optax.linear_schedule(
+                init_value=self.learning_rate,
+                end_value=self.discr_final_lr,
+                transition_steps=self.transition_steps_decay * self.discr_updates,
+            )
         elif self.schedule_type == "constant":
             schedule = self.learning_rate
         elif self.schedule_type == "harmonic":
@@ -68,7 +65,7 @@ class Discriminator(flax_nn.Module):
         train_state = TrainState.create(
             apply_fn=self.apply,
             params=self.init(_rng, init_x),
-            tx=optax.adamw(learning_rate=schedule, weight_decay=self.l1_loss, eps=1e-5),
+            tx=optax.adamw(learning_rate=schedule, weight_decay=self.l2_loss, eps=1e-5),
         )
         return train_state, rng
 
@@ -145,6 +142,7 @@ class Discriminator(flax_nn.Module):
             [FrozenDict, jnp.ndarray, jnp.ndarray], Tuple[jnp.ndarray, FrozenDict]
         ],
         buffer_state: jnp.ndarray,
+        norm_stats: Tuple[jnp.ndarray, jnp.ndarray],
         carry: Tuple[TrainState, jax.random.PRNGKeyArray],
         unused: Any,
     ) -> Tuple[TrainState, jnp.ndarray]:
@@ -161,8 +159,11 @@ class Discriminator(flax_nn.Module):
             key_imit_sel,
             buffer_state,
         )
+        norm_expert_batch = (expert_batch - norm_stats[0]) / jnp.sqrt(
+            norm_stats[1] + 1e-8
+        )
         loss_val, grads = loss_grad_fn(
-            train_state.params, expert_batch, imitation_batch, train_key
+            train_state.params, norm_expert_batch, imitation_batch, train_key
         )
         train_state = train_state.apply_gradients(grads=grads)
         return (train_state, key), loss_val
@@ -172,9 +173,16 @@ class Discriminator(flax_nn.Module):
         imit_data_buffer_state: Any,
         train_state: TrainState,
         key: Any,
+        norm_stats: Any,
     ) -> Tuple[TrainState, jnp.ndarray]:
+        if norm_stats is None:
+            norm_mean = jnp.zeros(self.n_features)
+            norm_var = jnp.ones(self.n_features)
+            norm_stats = (norm_mean, norm_var)
         loss_grad_fn = jax.value_and_grad(self.batch_loss)
-        _update_step = partial(self.update_step, loss_grad_fn, imit_data_buffer_state)
+        _update_step = partial(
+            self.update_step, loss_grad_fn, imit_data_buffer_state, norm_stats
+        )
 
         train_state, losses = jax.lax.scan(
             _update_step, (train_state, key), xs=None, length=self.discr_updates

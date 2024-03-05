@@ -32,9 +32,9 @@ class ObsvActionBuffer:
 
     def init_state(self, rng):
         return BufferState(
-            buffer_obsv=jnp.zeros((self.max_size, *self.obsv_shape), dtype=jnp.float16),
+            buffer_obsv=jnp.zeros((self.max_size, *self.obsv_shape), dtype=jnp.float32),
             buffer_actions=jnp.zeros(
-                (self.max_size, self.action_shape), dtype=jnp.float16
+                (self.max_size, self.action_shape), dtype=jnp.float32
             ),
             buffer_size=0,
         )

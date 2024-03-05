@@ -100,7 +100,7 @@ class IRL(ABC):
                 "discr_updates"
             ],  # how many discriminator update steps should be done using the same batch of data
             "n_features": self.in_features,
-            "l1_loss": es_config["discr_l1_loss"],
+            "l2_loss": es_config["discr_l2_loss"],
             "transition_steps_decay": int(es_config["discr_trans_decay"]),
             "schedule_type": es_config["discr_schedule_type"],
             "discr_loss": es_config["discr_loss"],
@@ -149,11 +149,20 @@ class IRL(ABC):
         )
 
     @partial(jax.jit, static_argnums=(0))
-    def get_discriminator_loss(self, buffer_state, discr_train_state, key):
+    def get_discriminator_loss(
+        self, buffer_state, discr_train_state, key, runner_state
+    ):
+        if runner_state is None:
+            norm_avg = jnp.zeros(self.in_features)
+            norm_var = jnp.ones(self.in_features)
+        else:
+            norm_avg = runner_state[1].mean
+            norm_var = runner_state[1].var
         new_discr_train_state, _discr_losses = self.discr.train_epoch(
             imit_data_buffer_state=buffer_state,
             train_state=discr_train_state,
             key=key,
+            norm_stats=(norm_avg, norm_var),
         )
         return new_discr_train_state
 
@@ -170,6 +179,12 @@ class IRL(ABC):
             current_config["NUM_UPDATES"] = current_config["ORIG_NUM_UPDATES"]
         else:
             cur_env_params = self.env_params
+        if runner_state is None:
+            norm_avg = jnp.zeros(self.in_features)
+            norm_var = jnp.ones(self.in_features)
+        else:
+            norm_avg = runner_state[1].mean
+            norm_var = runner_state[1].var
         wrapped_env = RewardWrapper(
             self._env,
             cur_env_params,
@@ -178,6 +193,7 @@ class IRL(ABC):
             include_action=self._include_action,
             training_config=self._training_config,
             invert_reward=True,
+            norm_stats=(norm_avg, norm_var),
         )
 
         train_fn = self.make_train(
@@ -214,6 +230,7 @@ class IRL(ABC):
             buffer_state,
             discr_train_state,
             rng_loss,
+            runner_state,
         )
         # xe_loss = self.xe_loss(runner_state)
         if self._es_config["dual"]:

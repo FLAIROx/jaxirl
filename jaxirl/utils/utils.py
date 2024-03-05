@@ -258,6 +258,7 @@ class RewardWrapper:
         include_action=False,
         training_config=None,
         invert_reward=False,
+        norm_stats=None,
     ):
         self._env = env
         self.action_size = get_action_size(env, env_params)
@@ -268,6 +269,12 @@ class RewardWrapper:
         self.gamma = training_config["GAMMA"]
         self.agent_net = get_network(self.action_size, training_config)
         self.invert_reward = int(invert_reward)
+        if norm_stats is None:
+            self.norm_avg = jnp.zeros(self.observation_size)
+            self.norm_var = jnp.ones(self.observation_size)
+        else:
+            self.norm_avg = norm_stats[0]
+            self.norm_var = norm_stats[1]
 
     def reset(self, key, params=None):
         obsv, env_state = self._env.reset(key, params)
@@ -282,7 +289,7 @@ class RewardWrapper:
             reward_input = maybe_concat_action(
                 self.include_action,
                 self.action_size,
-                self._get_obs(state, params),
+                self.normalise_obs(self._get_obs(state, params)),
                 action,
             )
             reward = self.reward_network.apply(
@@ -301,6 +308,9 @@ class RewardWrapper:
                 return self._env.get_obs(state)
             except TypeError:
                 return self._env.get_obs(state, params)
+
+    def normalise_obs(self, obs):
+        return (obs - self.norm_avg) / jnp.sqrt(self.norm_var + 1e-8)
 
     def observation_space(self, params):
         return self._env.observation_space(params)

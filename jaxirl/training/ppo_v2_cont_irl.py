@@ -10,6 +10,7 @@ import distrax
 from jaxirl.training.wrappers import (
     ClipActionRewardIRL,
     LogWrapperRewardIRL,
+    NormalizeVecObservationIRL,
     NormalizeVecRewardIRL,
     VecEnvRewardIRL,
 )
@@ -64,6 +65,10 @@ class Transition(NamedTuple):
     info: jnp.ndarray
 
 
+def unnormalize_obs(obs, mean, var):
+    return (obs * jnp.sqrt(var + 1e-8)) + mean
+
+
 def eval(
     num_envs,
     num_steps,
@@ -73,17 +78,28 @@ def eval(
     rng,
     network,
     return_reward=False,
+    normalize_obs=True,
+    env_state_norm=None,
 ):
     env = LogWrapperRewardIRL(env)
     env = ClipActionRewardIRL(env)
     env = VecEnvRewardIRL(env)
+    env = NormalizeVecObservationIRL(env, normalize_obs)
 
     # INIT ENV
     rng, _rng = jax.random.split(rng)
     rng, _rng = jax.random.split(rng)
     reset_rng = jax.random.split(_rng, num_envs)
     obsv, env_state = env.reset(reset_rng, env_params)
-    prev_done = jnp.array([True] * num_envs)
+    if normalize_obs:
+        env_state = env_state.replace(
+            mean=env_state_norm.mean,
+            var=env_state_norm.var,
+            count=env_state_norm.count,
+        )
+    env_state_mean = env_state.mean
+    env_state_var = env_state.var
+    prev_done = jnp.ones(shape=(num_envs,), dtype=jnp.bool_)
 
     # COLLECT TRAJECTORIES
     def _env_step(runner_state, unused):
@@ -107,13 +123,23 @@ def eval(
             agent_params,
         )
         prev_done = done
-        transition = Transition(done, action, value, reward, log_prob, last_obs, info)
+        transition = Transition(
+            done,
+            action,
+            value,
+            reward,
+            log_prob,
+            unnormalize_obs(last_obs, env_state_mean, env_state_var),
+            info,
+        )
         runner_state = (agent_params, env_state, obsv, rng, prev_done)
         return runner_state, (transition, info)
 
     rng, _rng = jax.random.split(rng)
     runner_state = (agent_params, env_state, obsv, _rng, prev_done)
-    runner_state, (traj_batch, info) = jax.lax.scan(_env_step, runner_state, None, num_steps)
+    runner_state, (traj_batch, info) = jax.lax.scan(
+        _env_step, runner_state, None, num_steps
+    )
     if return_reward:
         return (
             traj_batch.obs,
@@ -137,9 +163,6 @@ def make_train(
     runner_state_start,
     log_timestep_returns=False,
 ):
-    # config["NUM_UPDATES"] = (
-    #     config["TOTAL_TIMESTEPS"] // config["NUM_STEPS"] // config["NUM_ENVS"]
-    # )
     config["MINIBATCH_SIZE"] = (
         config["NUM_ENVS"] * config["NUM_STEPS"] // config["NUM_MINIBATCHES"]
     )
@@ -147,6 +170,7 @@ def make_train(
     env = ClipActionRewardIRL(env)
     env = VecEnvRewardIRL(env)
     env = NormalizeVecRewardIRL(env, config["GAMMA"], config["NORMALIZE_REWARD"])
+    env = NormalizeVecObservationIRL(env, config["NORMALIZE_OBS"])
 
     def linear_schedule(count):
         frac = 1.0 - (
@@ -181,20 +205,31 @@ def make_train(
             rng, _rng = jax.random.split(rng)
             reset_rng = jax.random.split(_rng, config["NUM_ENVS"])
             obsv, env_state = env.reset(reset_rng, env_params)
-            prev_done = jnp.array([True] * config["NUM_ENVS"])
+            prev_done = jnp.ones(shape=(config["NUM_ENVS"],), dtype=jnp.bool_)
             rng, _rng = jax.random.split(rng)
             runner_state = (train_state, env_state, obsv, _rng, prev_done)
         else:
-            start_sum_of_retuns = runner_state_start[1].env_state.sum_of_returns
-            start_timestep = runner_state_start[1].env_state.timestep
-            logging_env_state = runner_state_start[1].env_state.replace(
-                sum_of_returns=jnp.zeros_like(start_sum_of_retuns),
+            start_sum_of_real_returns = runner_state_start[
+                1
+            ].env_state.env_state.sum_of_real_returns
+            start_sum_of_irl_returns = runner_state_start[
+                1
+            ].env_state.env_state.sum_of_irl_returns
+            start_timestep = runner_state_start[1].env_state.env_state.timestep
+            logging_env_state = runner_state_start[1].env_state.env_state.replace(
+                sum_of_real_returns=jnp.zeros_like(start_sum_of_real_returns),
+                sum_of_irl_returns=jnp.zeros_like(start_sum_of_irl_returns),
                 timestep=jnp.zeros_like(start_timestep),
             )
-            new_env_state = runner_state_start[1].replace(env_state=logging_env_state)
+            new_rew_norm_env_state = runner_state_start[1].env_state.replace(
+                env_state=logging_env_state
+            )
+            new_norm_obs_env_state = runner_state_start[1].replace(
+                env_state=new_rew_norm_env_state
+            )
             runner_state = (
                 runner_state_start[0],
-                new_env_state,
+                new_norm_obs_env_state,
                 runner_state_start[2],
                 runner_state_start[3],
                 runner_state_start[4],
@@ -347,23 +382,7 @@ def make_train(
             train_state = update_state[0]
             metric = traj_batch.info
             rng = update_state[-1]
-            if config.get("DEBUG"):
 
-                def callback(info):
-                    return_values = info["returned_episode_returns"][
-                        info["returned_episode"]
-                    ]
-                    timesteps = (
-                        info["timestep"][info["returned_episode"]] * config["NUM_ENVS"]
-                    )
-                    for t in range(len(timesteps)):
-                        print(
-                            f"global step={timesteps[t]}, episodic return={return_values[t]}"
-                        )
-
-                jax.debug.callback(callback, metric)
-
-            # jax.debug.print("returns {r}, timesteps {t}", r=env_state.env_state.sum_of_returns, t=env_state.env_state.timestep)
             runner_state = (train_state, env_state, last_obs, rng, prev_done)
             return runner_state, (metric, traj_batch.obs, traj_batch.action)
 
@@ -377,17 +396,9 @@ def make_train(
             )
             metric = {}
         metric["returned_episode_returns"] = (
-            runner_state[1].env_state.sum_of_returns
-            / runner_state[1].env_state.timestep
+            runner_state[1].env_state.env_state.sum_of_returns
+            / runner_state[1].env_state.env_state.timestep
         )
-        if runner_state_start is not None:
-            metric["diff_returned_episode_returns"] = (
-                runner_state[1].env_state.sum_of_returns - start_sum_of_retuns
-            ) / start_timestep
-        else:
-            metric["diff_returned_episode_returns"] = metric["returned_episode_returns"]
-        metric["last_return"] = runner_state[1].env_state.returned_episode_returns
-        metric["real_reward_var"] = runner_state[1].var
         # (150, 200, 256, 10) batch_obs / batch_reward
         return {
             "runner_state": runner_state,
