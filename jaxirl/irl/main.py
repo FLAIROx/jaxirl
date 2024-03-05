@@ -90,6 +90,7 @@ def main(es_config=None):
             agent_params=expert_train_out["runner_state"][0].params,
             rng=jax.random.PRNGKey(0),
             network=true_env.agent_net,
+            env_state_norm=expert_train_out["runner_state"][1],
         )
         with open(trained_expert_path, "wb") as f:
             test_original_returns = (
@@ -127,6 +128,7 @@ def main(es_config=None):
             agent_params=test_train_out["runner_state"][0].params,
             rng=jax.random.PRNGKey(0),
             network=true_env.agent_net,
+            env_state_norm=test_train_out["runner_state"][1],
         )
         with open(trained_test_expert_path, "wb") as f:
             original_returns = (
