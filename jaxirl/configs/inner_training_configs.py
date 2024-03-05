@@ -104,7 +104,7 @@ BRAX_CONFIG = {
     "ACTIVATION": "tanh",
     "ENV_NAME": "brax",
     "ANNEAL_LR": False,
-    "NORMALIZE_ENV": False,
+    "NORMALIZE_OBS": True,
     "DEBUG": False,
     "DISCRETE": False,
 }
