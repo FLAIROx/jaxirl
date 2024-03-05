@@ -209,16 +209,12 @@ def make_train(
             rng, _rng = jax.random.split(rng)
             runner_state = (train_state, env_state, obsv, _rng, prev_done)
         else:
-            start_sum_of_real_returns = runner_state_start[
+            start_sum_of_returns = runner_state_start[
                 1
-            ].env_state.env_state.sum_of_real_returns
-            start_sum_of_irl_returns = runner_state_start[
-                1
-            ].env_state.env_state.sum_of_irl_returns
+            ].env_state.env_state.sum_of_returns
             start_timestep = runner_state_start[1].env_state.env_state.timestep
             logging_env_state = runner_state_start[1].env_state.env_state.replace(
-                sum_of_real_returns=jnp.zeros_like(start_sum_of_real_returns),
-                sum_of_irl_returns=jnp.zeros_like(start_sum_of_irl_returns),
+                sum_of_returns=jnp.zeros_like(start_sum_of_returns),
                 timestep=jnp.zeros_like(start_timestep),
             )
             new_rew_norm_env_state = runner_state_start[1].env_state.replace(
