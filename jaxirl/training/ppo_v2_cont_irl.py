@@ -118,7 +118,7 @@ def eval(
             action,
             env_params,
             prev_done,
-            train_state.params,
+            agent_params,
         )
         prev_done = done
         transition = Transition(
@@ -254,7 +254,7 @@ def make_train(
                     action,
                     env_params,
                     prev_done,
-                    agent_params,
+                    train_state.params,
                 )
                 prev_done = done
                 transition = Transition(
