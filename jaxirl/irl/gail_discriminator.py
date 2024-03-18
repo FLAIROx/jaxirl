@@ -6,6 +6,7 @@ from flax import linen as flax_nn
 import optax
 from flax.training.train_state import TrainState
 from flax.core.frozen_dict import FrozenDict
+from flax.linen.initializers import constant, orthogonal
 
 
 class Discriminator(flax_nn.Module):
@@ -25,14 +26,23 @@ class Discriminator(flax_nn.Module):
 
     def setup(self):
         self.g_layers = [
-            flax_nn.Dense(layer_size) for layer_size in self.reward_net_hsize
-        ] + [flax_nn.Dense(1)]
+            flax_nn.Dense(
+                layer_size, kernel_init=orthogonal(np.sqrt(2)), bias_init=constant(0.0)
+            )
+            for layer_size in self.reward_net_hsize
+        ] + [
+            flax_nn.Dense(
+                1, kernel_init=orthogonal(np.sqrt(2)), bias_init=constant(0.0)
+            )
+        ]
 
     def __call__(self, x) -> jnp.ndarray:
         for i, layer in enumerate(self.g_layers):
             x = layer(x)
             if i != len(self.g_layers) - 1:
                 x = self.activation_fn(x)
+            else:
+                x = -flax_nn.sigmoid(x)
         return x
 
     def scheduler(self, step_number):
@@ -100,8 +110,7 @@ class Discriminator(flax_nn.Module):
             target = jnp.tile(jnp.array([0.0]), (imit_d.shape[0],))
             return optax.l2_loss(imit_d, target)
 
-        @partial(jax.grad, argnums=1)
-        def f_interpolate(
+        def apply_scalar(
             params: FrozenDict,
             input: jnp.ndarray,
         ):
@@ -126,10 +135,12 @@ class Discriminator(flax_nn.Module):
         alpha = jax.random.uniform(key, (imitation_batch.shape[0],))
 
         interpolated = jax.vmap(interpolate)(alpha, expert_batch, imitation_batch)
-        gradients = jax.vmap(f_interpolate, (None, 0))(params, interpolated)
+        gradients = jax.vmap(jax.grad(fun=apply_scalar, argnums=1), (None, 0))(
+            params, interpolated
+        )
         gradients = gradients.reshape((expert_batch.shape[0], -1))
-        grad_norm = jnp.linalg.norm(gradients, axis=1)
-        grad_penalty = ((grad_norm - 0.4) ** 2).mean()
+        gradients_norm = jnp.sqrt(jnp.sum(gradients**2, axis=1) + 1e-12)
+        grad_penalty = ((gradients_norm - 0.4) ** 2).mean()
 
         # here we use 10 as a fixed parameter as a cost of the penalty.
         loss = exp_loss - imit_loss + 10 * grad_penalty
