@@ -170,8 +170,8 @@ class Discriminator(flax_nn.Module):
             key_imit_sel,
             buffer_state,
         )
-        norm_expert_batch = (expert_batch - norm_stats[0]) / jnp.sqrt(
-            norm_stats[1] + 1e-8
+        norm_expert_batch = (expert_batch - buffer_state.norm_mean) / jnp.sqrt(
+            buffer_state.norm_var + 1e-8
         )
         loss_val, grads = loss_grad_fn(
             train_state.params, norm_expert_batch, imitation_batch, train_key
