@@ -97,8 +97,6 @@ def eval(
             var=env_state_norm.var,
             count=env_state_norm.count,
         )
-    env_state_mean = env_state.mean
-    env_state_var = env_state.var
     prev_done = jnp.ones(shape=(num_envs,), dtype=jnp.bool_)
 
     # COLLECT TRAJECTORIES
@@ -114,13 +112,13 @@ def eval(
         # STEP ENV
         rng, _rng = jax.random.split(rng)
         rng_step = jax.random.split(_rng, num_envs)
-        obsv, env_state, reward, done, info = env.step(
+        norm_obsv, obsv, env_state, reward, done, info = env.step(
             rng_step,
             env_state,
             action,
             env_params,
             prev_done,
-            agent_params,
+            train_state.params,
         )
         prev_done = done
         transition = Transition(
@@ -132,7 +130,7 @@ def eval(
             unnormalize_obs(last_obs, env_state_mean, env_state_var),
             info,
         )
-        runner_state = (agent_params, env_state, obsv, rng, prev_done)
+        runner_state = (agent_params, env_state, norm_obsv, rng, prev_done)
         return runner_state, (transition, obsv)
 
     rng, _rng = jax.random.split(rng)
@@ -250,22 +248,22 @@ def make_train(
                 # STEP ENV
                 rng, _rng = jax.random.split(rng)
                 rng_step = jax.random.split(_rng, config["NUM_ENVS"])
-                obsv, env_state, reward, done, info = env.step(
+                norm_obsv, obsv, env_state, reward, done, info = env.step(
                     rng_step,
                     env_state,
                     action,
                     env_params,
                     prev_done,
-                    train_state.params,
+                    agent_params,
                 )
                 prev_done = done
                 transition = Transition(
                     done, action, value, reward, log_prob, last_obs, info
                 )
-                runner_state = (train_state, env_state, obsv, rng, prev_done)
-                return runner_state, transition
+                runner_state = (train_state, env_state, norm_obsv, rng, prev_done)
+                return runner_state, (transition, obsv)
 
-            runner_state, traj_batch = jax.lax.scan(
+            runner_state, (traj_batch, unnorm_obsv) = jax.lax.scan(
                 _env_step, runner_state, None, config["NUM_STEPS"]
             )
 
@@ -384,7 +382,7 @@ def make_train(
             rng = update_state[-1]
 
             runner_state = (train_state, env_state, last_obs, rng, prev_done)
-            return runner_state, (metric, traj_batch.obs, traj_batch.action)
+            return runner_state, (metric, unnorm_obsv, traj_batch.action)
 
         if log_timestep_returns:
             runner_state, (metric, actor_obs, actor_actions) = jax.lax.scan(
