@@ -133,21 +133,25 @@ def eval(
             info,
         )
         runner_state = (agent_params, env_state, obsv, rng, prev_done)
-        return runner_state, (transition, info)
+        return runner_state, (transition, obsv)
 
     rng, _rng = jax.random.split(rng)
     runner_state = (agent_params, env_state, obsv, _rng, prev_done)
-    runner_state, (traj_batch, info) = jax.lax.scan(
+    runner_state, (traj_batch, obsv) = jax.lax.scan(
         _env_step, runner_state, None, num_steps
     )
     if return_reward:
         return (
-            traj_batch.obs,
+            obsv,
             traj_batch.action,
-            info["timestep_returned_episode_returns"],
+            jnp.where(
+                jnp.sum(traj_batch.done),
+                jnp.sum(traj_batch.reward) / jnp.sum(traj_batch.done),
+                0.0,
+            ),
         )
     else:
-        return traj_batch.obs, traj_batch.action
+        return obsv, traj_batch.action
 
 
 def get_network(env, env_params, config):
