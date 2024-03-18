@@ -546,6 +546,7 @@ class NormalizeVecObservationIRL(GymnaxWrapper):
                 (obs - state.mean) / jnp.sqrt(state.var + 1e-8),
                 obs,
             ),
+            obs,
             state,
             reward,
             done,
