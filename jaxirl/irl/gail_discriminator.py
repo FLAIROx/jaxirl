@@ -7,6 +7,7 @@ import optax
 from flax.training.train_state import TrainState
 from flax.core.frozen_dict import FrozenDict
 from flax.linen.initializers import constant, orthogonal
+import numpy as np
 
 
 class Discriminator(flax_nn.Module):
