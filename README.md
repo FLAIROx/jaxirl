@@ -129,7 +129,7 @@ If you find this code useful in your research, please cite:
 ```bibtex
 @misc{sapora2023evil,
       title={EvIL: Evolution Strategies for Generalisable Imitation Learning}, 
-      author={Silvia Sapora and Chris Lu and Gokul Swamy and Yee Whye Teh and Jakob Nicolaus Foerster},
+      author={Silvia Sapora and Gokul Swamy and Chris Lu and Yee Whye Teh and Jakob Nicolaus Foerster},
       year={2023},
 }
 ```
