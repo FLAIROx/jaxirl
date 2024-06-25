@@ -127,10 +127,10 @@ and the default parameters in ```outer_training_configs.py``` and the trained ex
 
 If you find this code useful in your research, please cite:
 ```bibtex
-@misc{sapora2023evil,
+@misc{sapora2024evil,
       title={EvIL: Evolution Strategies for Generalisable Imitation Learning}, 
       author={Silvia Sapora and Gokul Swamy and Chris Lu and Yee Whye Teh and Jakob Nicolaus Foerster},
-      year={2023},
+      year={2024},
 }
 ```
 
