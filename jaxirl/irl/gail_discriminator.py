@@ -56,8 +56,8 @@ class Discriminator(flax_nn.Module):
 
     def _init_state(
         self,
-        rng: jax.random.PRNGKeyArray,
-    ) -> Tuple[TrainState, jax.random.PRNGKeyArray]:
+        rng: Any,
+    ) -> Tuple[TrainState, Any]:
         rng, _rng = jax.random.split(rng)
         init_x = jnp.zeros(self.n_features)
         if self.schedule_type == "linear":
@@ -155,7 +155,7 @@ class Discriminator(flax_nn.Module):
         ],
         buffer_state: jnp.ndarray,
         norm_stats: Tuple[jnp.ndarray, jnp.ndarray],
-        carry: Tuple[TrainState, jax.random.PRNGKeyArray],
+        carry: Tuple[TrainState, Any],
         unused: Any,
     ) -> Tuple[TrainState, jnp.ndarray]:
         train_state, key = carry

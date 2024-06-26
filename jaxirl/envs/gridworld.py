@@ -5,7 +5,6 @@ from gymnax.environments import environment, spaces
 from typing import Tuple, Optional
 import chex
 import flax
-import haiku as hk
 
 
 def get_state_from_obs(num_columns, num_rows, num_rewards, obs):
@@ -33,20 +32,20 @@ def rooms_maze(
     horizontal_wall_x: Optional[int] = 1,
 ):
     grid = jnp.ones((rows, columns))
-    rng = hk.PRNGSequence(key)
+    rng1, rng2, rng3, rng4 = jax.random.split(key, 4)
 
     # max value is exclusive
     vertical_wall_door_up = jax.random.randint(
-        next(rng), shape=(), minval=0, maxval=horizontal_wall_x
+        next(rng1), shape=(), minval=0, maxval=horizontal_wall_x
     )
     vertical_wall_door_down = jax.random.randint(
-        next(rng), shape=(), minval=horizontal_wall_x + 1, maxval=rows
+        next(rng2), shape=(), minval=horizontal_wall_x + 1, maxval=rows
     )
     horizontal_wall_door_left = jax.random.randint(
-        next(rng), shape=(), minval=0, maxval=vertical_wall_y
+        next(rng3), shape=(), minval=0, maxval=vertical_wall_y
     )
     horizontal_wall_door_right = jax.random.randint(
-        next(rng), shape=(), minval=vertical_wall_y + 1, maxval=columns
+        next(rng4), shape=(), minval=vertical_wall_y + 1, maxval=columns
     )
     vertical_wall_door_up = 0
     vertical_wall_door_down = 5

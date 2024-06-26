@@ -103,7 +103,7 @@ def get_action_size(env, env_params):
 
 def get_observation_size(env, env_params):
     if hasattr(env, "observation_size"):
-        return (env.observation_size,)
+        return env.observation_size
     else:
         return env.observation_space(env_params).shape
 
