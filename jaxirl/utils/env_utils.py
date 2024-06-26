@@ -11,7 +11,7 @@ from jaxirl.configs.inner_training_configs import (
     REACHER_CONFIG,
 )
 import gymnax
-from purejaxrl.wrappers import BraxGymnaxWrapper
+from jaxirl.training.wrappers import BraxGymnaxWrapper
 
 
 def get_env(env_name):
