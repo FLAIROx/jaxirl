@@ -325,9 +325,8 @@ def sample_init_state(
     params: EnvParams,
 ) -> Tuple[chex.Array, chex.Array]:
     """Sample a new initial state."""
-    rng = hk.PRNGSequence(key)
     pos_indexes = get_random_position(
-        grid_env, grid_indexes, num_rewards + 1, next(rng)
+        grid_env, grid_indexes, num_rewards + 1, next(key)
     )
     # pos_index = jnp.array([2,0])
     # goal_indexes = get_random_position(grid_env, grid_indexes, num_rewards, next(rng))
