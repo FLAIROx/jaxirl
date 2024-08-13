@@ -326,7 +326,7 @@ def sample_init_state(
 ) -> Tuple[chex.Array, chex.Array]:
     """Sample a new initial state."""
     pos_indexes = get_random_position(
-        grid_env, grid_indexes, num_rewards + 1, next(key)
+        grid_env, grid_indexes, num_rewards + 1, key
     )
     # pos_index = jnp.array([2,0])
     # goal_indexes = get_random_position(grid_env, grid_indexes, num_rewards, next(rng))
