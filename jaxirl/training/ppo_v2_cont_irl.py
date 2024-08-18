@@ -127,7 +127,7 @@ def eval(
             value,
             reward,
             log_prob,
-            unnormalize_obs(last_obs, env_state_mean, env_state_var),
+            unnormalize_obs(last_obs, env_state_norm.mean, env_state_norm.var),
             info,
         )
         runner_state = (agent_params, env_state, norm_obsv, rng, prev_done)
